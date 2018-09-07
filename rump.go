@@ -1,9 +1,10 @@
 package main
 
 import (
-	"os"
-	"fmt"
 	"flag"
+	"fmt"
+	"os"
+
 	"github.com/garyburd/redigo/redis"
 )
 
@@ -19,7 +20,7 @@ func handle(err error) {
 func get(conn redis.Conn, queue chan<- map[string]string) {
 	var (
 		cursor int64
-		keys []string
+		keys   []string
 	)
 
 	for {
@@ -38,7 +39,7 @@ func get(conn redis.Conn, queue chan<- map[string]string) {
 
 		// Build batch map.
 		batch := make(map[string]string)
-		for i, _ := range keys {
+		for i := range keys {
 			batch[keys[i]] = dumps[i]
 		}
 
