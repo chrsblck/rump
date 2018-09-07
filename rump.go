@@ -77,10 +77,30 @@ func main() {
 	to := flag.String("to", "", "example: redis://127.0.0.1:6379/1")
 	flag.Parse()
 
-	source, err := redis.DialURL(*from)
+	if *from == "" || *to == "" {
+		flag.Usage()
+		return
+	}
+
+	// empty passwords are skipped in redigo
+	sourceOptions := redis.DialPassword("")
+	if sourcePassword := os.Getenv("RUMP_AUTH_FROM"); sourcePassword != "" {
+		fmt.Printf("Attempting AUTH for %s\n", *from)
+		sourceOptions = redis.DialPassword(sourcePassword)
+	}
+	source, err := redis.DialURL(*from, sourceOptions)
 	handle(err)
-	destination, err := redis.DialURL(*to)
+	fmt.Printf("Connection to %q was successful\n", *from)
+
+	destOptions := redis.DialPassword("")
+	if destPassword := os.Getenv("RUMP_AUTH_TO"); destPassword != "" {
+		fmt.Printf("Attempting AUTH for %s\n", *to)
+		destOptions = redis.DialPassword(destPassword)
+	}
+	destination, err := redis.DialURL(*to, destOptions)
 	handle(err)
+	fmt.Printf("Connection to %q was successful\n", *to)
+
 	defer source.Close()
 	defer destination.Close()
 
